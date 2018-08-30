@@ -1,0 +1,31 @@
+version: '3'
+services: 
+  # what images do we need while working on this?
+  # or what dependencies are we using?
+  # postgress
+  postgres:
+    # and use that image
+    image: 'postgres:latest'
+  redis:
+    # then we need redis to use this image
+    image: 'redis:latest'
+    # then we need a server itself the code we've made
+  server:
+    # so need to build that container
+    build:
+      # use the dockerfile with our info there
+      dockerfile: Dockerfile.dev
+      # indiciate the locations, considering compose file is in root
+      # then needs to go to server folder to find dockerfile there
+      context: ./server
+
+    # to allow constant updates
+    volumes:
+      # but dont look for changes in that folder
+      # p.s "/app" is from WORKDIR dockerfile
+      - /app/node_modules
+      # check the server folder and send everything to :app
+      - ./server:/app
+
+# environmental variables can be declared here
+# process.env.VARIABLE
