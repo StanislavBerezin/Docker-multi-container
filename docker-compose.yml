@@ -6,11 +6,19 @@ services:
   postgres:
     # and use that image
     image: 'postgres:latest'
+  nginx:
+    restart: always
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports:
+      # nginux on 80, but map it to 3050
+      - "3050:80"
   redis:
     # then we need redis to use this image
     image: 'redis:latest'
     # then we need a server itself the code we've made
-  server:
+  api:
     # so need to build that container
     build:
       # use the dockerfile with our info there
@@ -26,6 +34,36 @@ services:
       - /app/node_modules
       # check the server folder and send everything to :app
       - ./server:/app
-
 # environmental variables can be declared here
 # process.env.VARIABLE
+    environment:
+    # redis is reffering to the one above
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PGUSER=postgres
+      - PGHOST=postgres
+      - PGDATABASE=postgres
+      - PGPASSWORD=postgres_password
+      - PGPORT=5432
+
+  client:
+    build: 
+      dockerfile: Dockerfile.dev
+      context: ./client
+    volumes:
+      - /app/node_modules
+      # everything from client should be applied in app folder
+      - ./client:/app
+      
+  worker:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./worker
+    volumes:
+      - /app/node_modules
+      - ./worker:/app
+    environment:
+    # redis is reffering to the one above
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
